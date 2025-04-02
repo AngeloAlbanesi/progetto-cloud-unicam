@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProvinciaTrentoHotel", "ProvinciaTrentoHotel.csproj", "{4F563875-C336-4A43-B842-B57973E56088}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunzioniDatiHotel", "..\FunzioniDatiHotel\FunzioniDatiHotel.csproj", "{292C26A1-1BC4-4EDE-BD65-5C0292DA7172}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunzioniDatiHotel", "FunzioniDatiHotel\FunzioniDatiHotel.csproj", "{292C26A1-1BC4-4EDE-BD65-5C0292DA7172}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
