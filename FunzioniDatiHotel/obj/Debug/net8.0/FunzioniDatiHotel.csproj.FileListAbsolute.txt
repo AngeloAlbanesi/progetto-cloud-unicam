@@ -1,0 +1,11 @@
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\bin\Debug\net8.0\FunzioniDatiHotel.deps.json
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\bin\Debug\net8.0\FunzioniDatiHotel.dll
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\bin\Debug\net8.0\FunzioniDatiHotel.pdb
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\FunzioniDatiHotel.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\FunzioniDatiHotel.AssemblyInfoInputs.cache
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\FunzioniDatiHotel.AssemblyInfo.cs
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\FunzioniDatiHotel.csproj.CoreCompileInputs.cache
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\FunzioniDatiHotel.dll
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\refint\FunzioniDatiHotel.dll
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\FunzioniDatiHotel.pdb
+C:\Users\pcamp\source\repos\FunzioniDatiHotel\obj\Debug\net8.0\ref\FunzioniDatiHotel.dll
