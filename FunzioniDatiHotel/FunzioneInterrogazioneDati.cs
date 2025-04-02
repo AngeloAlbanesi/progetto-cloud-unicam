@@ -37,19 +37,23 @@ namespace FunzioniDatiHotel
                     var properties = contentElement.Element(m + "properties");
                     if (properties != null)
                     {
-                        // Verifica se properties contiene degli elementi
-                        Console.WriteLine("Properties trovate!");
-
-                        // Prova a stampare i valori dei singoli elementi per vedere se sono correttamente estratti
-                        Console.WriteLine("Comune: " + properties.Element(d + "Cccomune_608711150")?.Value);
-                        Console.WriteLine("Denominazione: " + properties.Element(d + "Ccdenominazione1291548260")?.Value);
-                        Console.WriteLine("Tipologia: " + properties.Element(d + "Cctipologia_alb1238256790")?.Value);
+                        
 
                         hotels.Add(new Hotel
                         {
-                            Comune = properties.Element(d+"Cccomune_608711150")?.Value ?? "Sconosciuto",
-                            DenominazioneStruttura = properties.Element(d+"Ccdenominazione1291548260")?.Value ?? "Sconosciuto",
-                            Tipologia = properties.Element(d+"Cctipologia_alb1238256790")?.Value ?? "Sconosciuto"
+                            Comune = properties.Element(d + "Cccomune_608711150")?.Value ?? "Sconosciuto",
+                            DenominazioneStruttura = properties.Element(d + "Ccdenominazione1291548260")?.Value ?? "Sconosciuto",
+                            Tipologia = properties.Element(d + "Cctipologia_alb1238256790")?.Value ?? "Sconosciuto",
+                            Categoria = properties.Element(d + "Cccategoria_709124048")?.Value ?? "Sconosciuto",
+                            Indirizzo = properties.Element(d + "Ccindirizzo_1322096747")?.Value ?? "Sconosciuto",
+                            Frazione = properties.Element(d + "Ccfrazione_182197691")?.Value ?? "Sconosciuto",
+                            CAP = properties.Element(d + "Cccap_3047567")?.Value ?? "Sconosciuto",
+                            Telefono = properties.Element(d + "Cctelefono_90134615")?.Value ?? "Sconosciuto",
+                            FAX = properties.Element(d + "Ccfax_3050458")?.Value ?? "Sconosciuto",
+                            IndirizzoPostaElettronica = properties.Element(d + "Ccindirizzo_pos1351423458")?.Value ?? "Sconosciuto",
+                            TipologiaServizio = properties.Element(d + "Cctipologia_serv481601159")?.Value ?? "Sconosciuto",
+                            Altitudine = properties.Element(d + "Ccaltitudine_1110206336")?.Value ?? "Sconosciuto",
+                            NumeroPostiletto = properties.Element(d + "Ccnumero_posti_1304069088")?.Value ?? "Sconosciuto"
                         });
                     }
                     else
