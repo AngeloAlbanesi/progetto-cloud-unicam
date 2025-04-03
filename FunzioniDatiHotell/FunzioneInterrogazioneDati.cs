@@ -10,6 +10,7 @@ using FunzioniDatiHotell.Modelli;
 namespace FunzioniDatiHotell
 {
     //PROVA COMMENTO
+    //prova paolo
     public class FunzioneInterrogazioneDati
     {
         public static async Task<Hotel[]> DaiElencoHotel()
