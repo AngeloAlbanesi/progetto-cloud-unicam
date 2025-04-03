@@ -6,6 +6,7 @@ using ProvinciaTrentoHotel.ViewModels;
 
 namespace ProvinciaTrentoHotel.Controllers
 {
+    //PROVA
     public class HomeController : Controller
     {
         public IActionResult ElencoHotel()
