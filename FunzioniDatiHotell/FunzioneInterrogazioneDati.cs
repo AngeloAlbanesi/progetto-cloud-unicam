@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FunzioniDatiHotell.Modelli;
 
-namespace FunzioniDatiHotel
+namespace FunzioniDatiHotell
 {
     public class FunzioneInterrogazioneDati
     {

@@ -1,4 +1,4 @@
-﻿using FunzioniDatiHotel.Modelli;
+﻿using FunzioniDatiHotell.Modelli;
 
 namespace ProvinciaTrentoHotel.ViewModels
 {
