@@ -1,3 +1,6 @@
+using ProvinciaTrentoHotel.WSSoap;
+using SoapCore;
+
 namespace ProvinciaTrentoHotel
 {
     public class Program
@@ -7,6 +10,13 @@ namespace ProvinciaTrentoHotel
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddSoapCore();
+            builder.Services.AddScoped<
+                IServizioHotelProvinciaTrento,
+                ServizioHotelProvinciaTrento
+            >();
+
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
@@ -28,9 +38,17 @@ namespace ProvinciaTrentoHotel
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}"
+            );
 
-
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.UseSoapEndpoint<IServizioHotelProvinciaTrento>(
+                    "/ServizioHotelProvinciaTrento.wsdl",
+                    new SoapEncoderOptions(),
+                    SoapSerializer.XmlSerializer
+                );
+            });
             app.Run();
         }
     }
