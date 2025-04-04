@@ -4,7 +4,7 @@ namespace ProvinciaTrentoHotel.ViewModels
 {
     public class HomeDettagliHotelViewModel
     {
-        public Hotel hotelDettagliato{ get; set; }
+        public Hotel hotelDettagliato { get; set; }
 
     }
 }

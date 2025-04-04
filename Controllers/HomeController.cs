@@ -32,12 +32,12 @@ namespace ProvinciaTrentoHotel.Controllers
             return View(new HomeRicercaHotelComuneViewModel());
         }
 
-        public IActionResult DettaglioHotel(string pIva)
+        public IActionResult DettagliHotel(string pIva)
         {
-            HotelDettagliHotelViewModel vmDettaglioHotel = new HotelDettagliHotelViewModel();
+            HomeDettagliHotelViewModel vmDettagliHotel = new HomeDettagliHotelViewModel();
             Hotel hotelDettagliato = FunzioneInterrogazioneDati.RicercaHotelPerPIVA(pIva).Result;
-            vmDettaglioHotel.hotelDettagliato = hotelDettagliato;
-            return View(vmDettaglioHotel);
+            vmDettagliHotel.hotelDettagliato = hotelDettagliato;
+            return View(vmDettagliHotel);
         }
     }
 }
