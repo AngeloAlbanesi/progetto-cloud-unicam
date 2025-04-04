@@ -91,5 +91,11 @@ namespace FunzioniDatiHotell
 
             return hotels.ToArray();
         }
+        public static async Task<Hotel[]> RicercaHotelPerComune(string comune)
+        {
+            Hotel[] TuttiHotel = await DaiElencoHotel();
+            return TuttiHotel.Where(s => s.Comune.ToLower().Contains(comune.ToLower())).ToArray();
+        }
+
     }
 }
