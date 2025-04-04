@@ -29,6 +29,9 @@ namespace FunzioniDatiHotell.Modelli
 
         public string NumeroPostiletto { get; set; }
 
+        public string Latitudine { get; set; }
+        public string Longitudine { get; set; }
+
     }
 
 

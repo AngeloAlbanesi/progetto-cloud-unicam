@@ -11,7 +11,6 @@ public interface IServizioHotelProvinciaTrento
     public Hotel[] DaiElencoHotel();
 
     [OperationContract]
-
     public Hotel[] RicercaHotelPerComune(string comune);
 }
 
@@ -26,4 +25,6 @@ public class ServizioHotelProvinciaTrento : IServizioHotelProvinciaTrento
     {
         return FunzioniDatiHotell.FunzioneInterrogazioneDati.RicercaHotelPerComune(comune).Result;
     }
+
+  
 }

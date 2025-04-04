@@ -15,8 +15,7 @@ namespace FunzioniDatiHotell
     {
         public static async Task<Hotel[]> DaiElencoHotel()
         {
-            string BaseUri =
-                "http://www.datiopen.it//ODataProxy/MdData('8fbb00cb-943e-4141-8e7e-758d6c292778@datiopen')/DataRows?$skip=0&$top=2000";
+            string BaseUri = "http://www.datiopen.it//ODataProxy/MdData('8fbb00cb-943e-4141-8e7e-758d6c292778@datiopen')/DataRows?$skip=0&$top=2000";
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(BaseUri);
             string contents = await response.Content.ReadAsStringAsync();
