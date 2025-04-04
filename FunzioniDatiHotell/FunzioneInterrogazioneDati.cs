@@ -98,6 +98,10 @@ namespace FunzioniDatiHotell
             Hotel[] TuttiHotel = await DaiElencoHotel();
             return TuttiHotel.Where(s => s.Comune.ToLower().Contains(comune.ToLower())).ToArray();
         }
-
+        public static async Task<Hotel> RicercaHotelPerPIVA(string pIva)
+        {
+            Hotel[] TuttiHotel = await DaiElencoHotel();
+            return TuttiHotel.FirstOrDefault(s => s.PartitaIva.Equals(pIva));
+         }
     }
 }

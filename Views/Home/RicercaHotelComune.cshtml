@@ -21,12 +21,13 @@
     <h1>Elenco Strutture Alberghiere Provincia Autonoma Di Trento</h1>
 </body>
 @if (Model.RicercaHotel != null && Model.RicercaHotel.Any()){
-<table>
+<table border="2" cellpadding="10">
     <thead>
         <tr>
             <th>COMUNE</th>
             <th>NOME STRUTTURA</th>
             <th>TIPOLOGIA</th>
+            <th>CATEGORIA</th>
         </tr>
     </thead>
     <tbody>
@@ -36,6 +37,13 @@
                 <td>@Hotel.Comune</td>
                 <td>@Hotel.DenominazioneStruttura</td>
                 <td>@Hotel.Tipologia</td>
+                <td>@Hotel.Categoria</td>
+                <td>
+                        <form asp-action="DettaglioHotel" method="post">
+                            <input type="hidden" name="pIva" value="@Hotel.PartitaIva" />
+                            <button type="submit">Vedi dettagli</button>
+                        </form>
+                    </td>
             </tr>
         }
     </tbody>
