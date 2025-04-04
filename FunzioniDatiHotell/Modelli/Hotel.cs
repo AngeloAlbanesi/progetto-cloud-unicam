@@ -9,6 +9,7 @@ namespace FunzioniDatiHotell.Modelli
     
     public class Hotel
     {
+        public string PartitaIva {  get; set; }
         public string Comune { get; set; }
         public string Categoria { get; set; }
 

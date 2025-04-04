@@ -38,6 +38,8 @@ namespace FunzioniDatiHotell
                         hotels.Add(
                             new Hotel
                             {
+                                PartitaIva = properties.Element(d + "Ccpartita_iva_1140518421")?.Value
+                                    ?? "Sconosciuto",
                                 Comune =
                                     properties.Element(d + "Cccomune_608711150")?.Value
                                     ?? "Sconosciuto",
