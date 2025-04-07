@@ -10,11 +10,16 @@
 @{
     Layout = null;
 }
-
+ 
 
 <html>
 <head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <title>Dettagli Hotel</title>
+  
 </head>
 <body>
     <h1>Struttura Alberghiera Provincia Autonoma Di Trento</h1>
@@ -60,6 +65,130 @@
 
     NumeroPostiletto: @Model.hotelDettagliato.NumeroPostiletto
     <br />
+
+
+
+    <div id="map" style="height: 400px;"></div>
+
+
+  <!--  <script>
+        // Inizializza la mappa con coordinate predefinite (verrà aggiornata dopo la richiesta)
+        var map = L.map('map').setView([42.0, 12.0], 5); // Coordinate iniziali per l'Italia
+
+        // Aggiungi il layer delle tile di OpenStreetMap
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Definisci l'indirizzo da geocodificare
+        //const addressToSearch =  @Model.hotelDettagliato.Indirizzo + "," +@Model.hotelDettagliato.Comune + ",ITALIA";
+        const addressToSearch = "VIA FALERIENSE OVEST 51, MONTEGIORGIO. ITALIA";
+
+        const encodedAddress = encodeURIComponent(addressToSearch);
+
+        // Aggiungi parametri per migliorare la richiesta
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1&accept-language=it&addressdetails=1`;
+
+        // Usa l'API Fetch per ottenere le coordinate
+        fetch(nominatimUrl, {
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'TrentoHotelApp/1.0' // Importante per Nominatim
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.length > 0 && data[0].lat && data[0].lon) {
+                    // Estrai latitudine e longitudine dal risultato
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                   
+                    const displayName = data[0].display_name || 'Posizione selezionata';
+
+                    // Aggiorna la vista della mappa con le coordinate ottenute
+                    map.setView([lat, lon], 13);
+
+                    // Aggiungi un solo marker nella posizione ottenuta
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup("Posizione: " + displayName + "<br>Risultati trovati: " + @Model.hotelDettagliato)
+                        .openPopup();
+                } else {
+                    // Gestisci il caso in cui non sono stati trovati risultati
+                    console.error("Impossibile trovare le coordinate per l'indirizzo:", addressToSearch);
+                    // Usa coordinate predefinite per Trento
+                    map.setView([46.0748, 11.1217], 10);
+                    L.marker([46.0748, 11.1217]).addTo(map)
+                        .bindPopup('Trento, Italia<br>Risultati trovati: ' + @Model.hotelDettagliato)
+                        .openPopup();
+
+                    // Non aggiungiamo marker casuali per gli hotel
+                }
+            })
+            .catch(error => {
+                // Gestisci gli errori durante l'operazione di fetch
+                console.error('Errore durante il recupero delle coordinate:', error);
+                // Usa coordinate predefinite per Trento in caso di errore
+                map.setView([46.0748, 11.1217], 10);
+                L.marker([46.0748, 11.1217]).addTo(map)
+                    .bindPopup('Trento, Italia<br>Risultati trovati: ' + @Model.hotelDettagliato)
+                    .openPopup();
+
+                // Non aggiungiamo marker casuali per gli hotel
+            });
+    </script> -->
+    
+    <script>
+        const address = '@Model.hotelDettagliato.Indirizzo' + ', ' + '@Model.hotelDettagliato.Comune';
+
+                // Funzione per ottenere le coordinate tramite Nominatim
+        async function loadMap() {
+            const baseUrl = 'https://nominatim.openstreetmap.org/search';
+            const params = new URLSearchParams({
+                q: address,
+                format: 'json',
+                addressdetails: 1,
+                limit: 1
+            });
+
+            try {
+                // Chiamata al servizio Nominatim
+                const response = await fetch(`${baseUrl}?${params}`);
+                if (!response.ok) throw new Error('Errore nella richiesta a Nominatim');
+
+                const data = await response.json();
+                if (data.length > 0) {
+                    const lat = data[0].lat;
+                    const lon = data[0].lon;
+
+                    // Creazione della mappa con Leaflet
+                    const map = L.map('map').setView([lat, lon], 15); // Zoom impostato a 15
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    // Aggiunta di un marcatore
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup(address)
+                        .openPopup();
+                } else {
+                    alert('Indirizzo non trovato!'+address);
+                }
+            } catch (error) {
+                console.error('Errore durante il caricamento della mappa:', error);
+            }
+        }
+
+        // Carica la mappa quando la pagina è caricata
+        document.addEventListener('DOMContentLoaded', loadMap);
+
+    </script>
 
 </body>
 
