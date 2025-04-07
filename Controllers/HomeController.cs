@@ -6,10 +6,13 @@ using ProvinciaTrentoHotel.ViewModels;
 
 namespace ProvinciaTrentoHotel.Controllers
 {
-    //PROVA
-    //prova paolo
+   
     public class HomeController : Controller
     {
+        public ActionResult Index()
+        {
+            return View();
+        }
         public IActionResult ElencoHotel()
         {
             HomeElencoHotelViewModel vm = new HomeElencoHotelViewModel();
