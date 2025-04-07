@@ -10,7 +10,99 @@
 @{
     Layout = null;
 }
- 
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <title>Dettagli Hotel</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+
+    <h1>Struttura Alberghiera - Provincia Autonoma di Trento</h1>
+    <h2>Dettagli Hotel</h2>
+
+    <p><strong>Partita IVA:</strong> @Model.hotelDettagliato.PartitaIva</p>
+    <p><strong>Comune:</strong> @Model.hotelDettagliato.Comune</p>
+    <p><strong>Categoria:</strong> @Model.hotelDettagliato.Categoria</p>
+    <p><strong>Denominazione Struttura:</strong> @Model.hotelDettagliato.DenominazioneStruttura</p>
+    <p><strong>Indirizzo:</strong> @Model.hotelDettagliato.Indirizzo</p>
+    <p><strong>Frazione:</strong> @Model.hotelDettagliato.Frazione</p>
+    <p><strong>CAP:</strong> @Model.hotelDettagliato.CAP</p>
+    <p><strong>Telefono:</strong> @Model.hotelDettagliato.Telefono</p>
+    <p><strong>FAX:</strong> @Model.hotelDettagliato.FAX</p>
+    <p><strong>Email:</strong> @Model.hotelDettagliato.IndirizzoPostaElettronica</p>
+    <p><strong>Tipologia:</strong> @Model.hotelDettagliato.Tipologia</p>
+    <p><strong>Tipologia Servizio:</strong> @Model.hotelDettagliato.TipologiaServizio</p>
+    <p><strong>Altitudine:</strong> @Model.hotelDettagliato.Altitudine</p>
+    <p><strong>Numero Posti Letto:</strong> @Model.hotelDettagliato.NumeroPostiletto</p>
+
+    <h2>Posizione sulla Mappa</h2>
+    <div id="map" style="height: 400px;"></div>
+
+    <script>
+        async function loadMap() {
+            const baseUrl = 'https://nominatim.openstreetmap.org/search';
+
+            async function fetchCoordinates(query) {
+                const params = new URLSearchParams({
+                    q: query,
+                    format: 'json',
+                    addressdetails: 1,
+                    limit: 1
+                });
+
+                const response = await fetch(`${baseUrl}?${params}`);
+                if (!response.ok) throw new Error('Errore nella richiesta a Nominatim');
+
+                const data = await response.json();
+                return data.length > 0 ? data[0] : null;
+            }
+
+            try {
+                let location = await fetchCoordinates(`${'@Model.hotelDettagliato.Indirizzo'}, ${'@Model.hotelDettagliato.Frazione'}, ${'@Model.hotelDettagliato.Comune'}`);
+
+                if (!location) {
+                    location = await fetchCoordinates(`${'@Model.hotelDettagliato.Frazione'}, ${'@Model.hotelDettagliato.Comune'}`);
+                }
+
+                if (!location) {
+                    location = await fetchCoordinates('@Model.hotelDettagliato.Comune');
+                }
+
+                if (location) {
+                    const lat = location.lat;
+                    const lon = location.lon;
+
+                    const map = L.map('map').setView([lat, lon], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup(location.display_name)
+                        .openPopup();
+                } else {
+                    alert('Indirizzo non trovato!');
+                }
+            } catch (error) {
+                console.error('Errore durante il caricamento della mappa:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadMap);
+    </script>
+
+</body>
+</html>
+
+ <!--
 
 <html>
 <head>
@@ -71,57 +163,67 @@
     <div id="map" style="height: 400px;"></div>
 
 
-    
     <script>
-        const address = '@Model.hotelDettagliato.Indirizzo' + ', ' + '@Model.hotelDettagliato.Comune';
+    async function loadMap() {
+    const baseUrl = 'https://nominatim.openstreetmap.org/search';
 
-                // Funzione per ottenere le coordinate tramite Nominatim
-        async function loadMap() {
-            const baseUrl = 'https://nominatim.openstreetmap.org/search';
-            const params = new URLSearchParams({
-                q: address,
-                format: 'json',
-                addressdetails: 1,
-                limit: 1
-            });
+    async function fetchCoordinates(query) {
+    const params = new URLSearchParams({
+    q: query,
+    format: 'json',
+    addressdetails: 1,
+    limit: 1
+    });
 
-            try {
-                // Chiamata al servizio Nominatim
-                const response = await fetch(`${baseUrl}?${params}`);
-                if (!response.ok) throw new Error('Errore nella richiesta a Nominatim');
+    const response = await fetch(`${baseUrl}?${params}`);
+    if (!response.ok) throw new Error('Errore nella richiesta a Nominatim');
 
-                const data = await response.json();
-                if (data.length > 0) {
-                    const lat = data[0].lat;
-                    const lon = data[0].lon;
+    const data = await response.json();
+    return data.length > 0 ? data[0] : null;
+    }
 
-                    // Creazione della mappa con Leaflet
-                    const map = L.map('map').setView([lat, lon], 15); // Zoom impostato a 15
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '© OpenStreetMap contributors'
-                    }).addTo(map);
+    try {
+    let location = await fetchCoordinates(`${'@Model.hotelDettagliato.Indirizzo'}, ${'@Model.hotelDettagliato.Frazione'}, ${'@Model.hotelDettagliato.Comune'}`);
 
-                    // Aggiunta di un marcatore
-                    L.marker([lat, lon]).addTo(map)
-                        .bindPopup(address)
-                        .openPopup();
-                } else {
-                    alert('Indirizzo non trovato!'+address);
-                }
-            } catch (error) {
-                console.error('Errore durante il caricamento della mappa:', error);
-            }
-        }
+    if (!location) {
+    // Fallback a frazione + comune
+    location = await fetchCoordinates(`${'@Model.hotelDettagliato.Frazione'}, ${'@Model.hotelDettagliato.Comune'}`);
+    }
 
-        // Carica la mappa quando la pagina è caricata
-        document.addEventListener('DOMContentLoaded', loadMap);
+    if (!location) {
+    // Fallback solo al comune
+    location = await fetchCoordinates('@Model.hotelDettagliato.Comune');
+    }
 
-    </script>
+    if (location) {
+    const lat = location.lat;
+    const lon = location.lon;
+
+    // Creazione della mappa con Leaflet
+    const map = L.map('map').setView([lat, lon], 15); // Zoom impostato a 15
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Aggiunta di un marcatore
+    L.marker([lat, lon]).addTo(map)
+    .bindPopup(location.display_name)
+    .openPopup();
+    } else {
+    alert('Indirizzo non trovato!');
+    }
+    } catch (error) {
+    console.error('Errore durante il caricamento della mappa:', error);
+    }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadMap);
+</script>
 
 </body>
 
 
 
 </html>
-
+-->

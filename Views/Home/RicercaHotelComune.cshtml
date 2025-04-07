@@ -7,47 +7,54 @@
 @{
     Layout = null;
 }
-<form asp-action="RicercaHotelComune" method="post">
-    <input type="text" name="InputComune" placeholder="Inserisci testo" />
-    <button type="submit">Ricerca</button>
-</form>
+
 
 
 <html>
 <head>
-    <title> Elenco Hotel</title>
+    <title> Cerca Hotel per comune</title>
 </head>
 <body>
-    <h1>Elenco Strutture Alberghiere Provincia Autonoma Di Trento</h1>
+    <h1>Inserisci il comune in cui vuoi trovare una Struttura alberghiera</h1>
+    <br />
+    <form asp-action="RicercaHotelComune" method="post">
+        <p>
+            <label>Comune: </label>
+            <input type="text" name="InputComune" placeholder="Inserisci comune" />
+            <button type="submit">Ricerca</button>
+        </p>
+    </form>
 </body>
-@if (Model.RicercaHotel != null && Model.RicercaHotel.Any()){
-<table border="2" cellpadding="10">
-    <thead>
-        <tr>
-            <th>COMUNE</th>
-            <th>NOME STRUTTURA</th>
-            <th>TIPOLOGIA</th>
-            <th>CATEGORIA</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var Hotel in Model.RicercaHotel)
-        {
+
+@if (Model.RicercaHotel != null && Model.RicercaHotel.Any())
+{
+    <table border="2" cellpadding="10">
+        <thead>
             <tr>
-                <td>@Hotel.Comune</td>
-                <td>@Hotel.DenominazioneStruttura</td>
-                <td>@Hotel.Tipologia</td>
-                <td>@Hotel.Categoria</td>
-                <td>
+                <th>COMUNE</th>
+                <th>NOME STRUTTURA</th>
+                <th>TIPOLOGIA</th>
+                <th>CATEGORIA</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var Hotel in Model.RicercaHotel)
+            {
+                <tr>
+                    <td>@Hotel.Comune</td>
+                    <td>@Hotel.DenominazioneStruttura</td>
+                    <td>@Hotel.Tipologia</td>
+                    <td>@Hotel.Categoria</td>
+                    <td>
                         <form asp-action="DettagliHotel" method="post">
                             <input type="hidden" name="pIva" value="@Hotel.PartitaIva" />
                             <button type="submit">Vedi dettagli</button>
                         </form>
                     </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 </html>
