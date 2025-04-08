@@ -26,13 +26,16 @@ namespace ProvinciaTrentoHotel.Controllers
         {
             HomeRicercaHotelComuneViewModel vmRicercaComune = new HomeRicercaHotelComuneViewModel();
             Hotel[] RicercaHotel = FunzioneInterrogazioneDati.RicercaHotelPerComune(InputComune).Result;
+            vmRicercaComune.ComuniDisponibili = FunzioneInterrogazioneDati.ComuniDisponibili().Result;
             vmRicercaComune.RicercaHotel=RicercaHotel;
             return View(vmRicercaComune);
         }
 
         public IActionResult RicercaHotelComune()
         {
-            return View(new HomeRicercaHotelComuneViewModel());
+            HomeRicercaHotelComuneViewModel vmRicercaComune = new HomeRicercaHotelComuneViewModel();
+            vmRicercaComune.ComuniDisponibili = FunzioneInterrogazioneDati.ComuniDisponibili().Result; //necessario per menu a tendina
+            return View(vmRicercaComune);
         }
 
         public IActionResult DettagliHotel(string pIva)

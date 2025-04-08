@@ -12,18 +12,37 @@
 
 <html>
 <head>
+    <link href="/css/StyleSheet.css" rel="stylesheet" type="text/css" />
+
     <title> Cerca Hotel per comune</title>
 </head>
 <body>
+    <button class="button">
+    <a href="@Url.Action("Index", "Home")">Torna alla Home</a>
+    </button>
     <h1>Inserisci il comune in cui vuoi trovare una Struttura alberghiera</h1>
     <br />
+   <!-- <form asp-action="RicercaHotelComune" method="post">
+        <p>
+            <label>Comune: </label>
+            <input type="text" name="InputComune" placeholder="Inserisci comune" />   //form inserimento comune
+            <button type="submit">Ricerca</button>
+        </p>
+    </form> -->
     <form asp-action="RicercaHotelComune" method="post">
         <p>
             <label>Comune: </label>
-            <input type="text" name="InputComune" placeholder="Inserisci comune" />
+            <select name="InputComune" id="InputComune">
+                <option value="" disabled selected>Seleziona un comune</option>
+                @foreach (var comune in Model.ComuniDisponibili)
+                {
+                    <option value="@comune">@comune</option>
+                }
+            </select>
             <button type="submit">Ricerca</button>
         </p>
     </form>
+
 </body>
 
 @if (Model.RicercaHotel != null && Model.RicercaHotel.Any())

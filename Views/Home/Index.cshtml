@@ -8,45 +8,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link href="/css/StyleSheet.css" rel="stylesheet" type="text/css" />
     <title>progetto</title>
 
 </head>
 <body>
-    <style>
-        .button {
-            display: block; /*Per incolonnare i bottoni*/
-            margin-bottom: 15px;
-            top: 50%;
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            min-height: 30px;
-            min-width: 120px;
-        }
-
-            .button a {
-                color: white;
-                text-decoration: none; /*Rimuove la sottolineatura*/
-            }
-
-            .button:hover {
-                background-color: black;
-                transition: 0.7s;
-            }
-
-            .button:focus {
-                outline-color: transparent;
-                outline-style: solid;
-                box-shadow: 0 0 0 4px #ff6666;
-                transition: 0.7s;
-            }
-
-            .button:active {
-                background-color: #ffbf00;
-            }
-    </style>
+    
     <button class="button">
         <a href="@Url.Action("ElencoHotel", "Home")">Vai all'elenco degli hotel</a>
     </button>

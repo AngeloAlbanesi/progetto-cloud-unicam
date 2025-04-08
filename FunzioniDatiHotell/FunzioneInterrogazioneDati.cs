@@ -9,8 +9,7 @@ using FunzioniDatiHotell.Modelli;
 
 namespace FunzioniDatiHotell
 {
-    //PROVA COMMENTO
-    //prova paolo
+    
     public class FunzioneInterrogazioneDati
     {
         private static string BaseUrl;
@@ -135,19 +134,27 @@ namespace FunzioniDatiHotell
                 skip += pageSize;
             }
 
+
             return hotels.ToArray();
         }
 
         public static async Task<Hotel[]> RicercaHotelPerComune(string comune)
         {
+           
             Hotel[] TuttiHotel = await DaiElencoHotel();
             return TuttiHotel.Where(s => s.Comune.ToLower().Contains(comune.ToLower())).ToArray();
         }
 
         public static async Task<Hotel> RicercaHotelPerPIVA(string pIva)
         {
-            Hotel[] TuttiHotel = await DaiElencoHotel();
+           Hotel[] TuttiHotel = await DaiElencoHotel();
             return TuttiHotel.FirstOrDefault(s => s.PartitaIva.Equals(pIva));
+        }
+
+        public static async Task<String[]> ComuniDisponibili()
+        {
+            Hotel[] TuttiHotel = await DaiElencoHotel();
+            return TuttiHotel.Select(h => h.Comune).Distinct().ToArray(); //necessario per menù a tendina
         }
     }
 }

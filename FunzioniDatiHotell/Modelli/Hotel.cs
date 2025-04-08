@@ -30,6 +30,6 @@ namespace FunzioniDatiHotell.Modelli
         public string NumeroPostiletto { get; set; }
 
     }
-
+     
 
 }
