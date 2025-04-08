@@ -98,12 +98,14 @@ namespace FunzioniDatiHotell
                                         properties.Element(d + "Ccfrazione_182197691")?.Value
                                         ?? "Sconosciuto",
                                     CAP =
-                                        properties.Element(d + "Cccap_3047567")?.Value ?? "Sconosciuto",
+                                        properties.Element(d + "Cccap_3047567")?.Value
+                                        ?? "Sconosciuto",
                                     Telefono =
                                         properties.Element(d + "Cctelefono_90134615")?.Value
                                         ?? "Sconosciuto",
                                     FAX =
-                                        properties.Element(d + "Ccfax_3050458")?.Value ?? "Sconosciuto",
+                                        properties.Element(d + "Ccfax_3050458")?.Value
+                                        ?? "Sconosciuto",
                                     IndirizzoPostaElettronica =
                                         properties.Element(d + "Ccindirizzo_pos1351423458")?.Value
                                         ?? "Sconosciuto",
@@ -133,7 +135,6 @@ namespace FunzioniDatiHotell
                 skip += pageSize;
             }
 
-            Console.WriteLine($"Numero totale di hotel recuperati: {hotels.Count}");
             return hotels.ToArray();
         }
 
