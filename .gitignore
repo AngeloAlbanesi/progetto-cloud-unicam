@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Ignora tutti i file di progetto C#
+*.csproj
+
 # User-specific files
 *.rsuser
 *.suo
@@ -366,11 +369,6 @@ FodyWeavers.xsd
 .vscode/
 *.code-workspace
 
-# Configuration files
-appsettings.json
-appsettings.Development.json
-appsettings.*.json
-
 # System Files
 .DS_Store
 Thumbs.db
@@ -383,3 +381,10 @@ Thumbs.db
 *.runtimeconfig.dev.json
 *.deps.json
 *.StaticWebAssets.xml
+
+# IntelliJ IDEA project files (se presenti)
+.idea/
+.idea/*
+.idea/**
+Properties/launchSettings.json
+

@@ -1,5 +1,7 @@
 using System;
 using System.ServiceModel;
+using System.Threading.Tasks; // Aggiunto per Task
+using FunzioniDatiHotell; // Aggiunto per FunzioneInterrogazioneDati
 using FunzioniDatiHotell.Modelli;
 
 namespace ProvinciaTrentoHotel.WSSoap;
@@ -8,22 +10,32 @@ namespace ProvinciaTrentoHotel.WSSoap;
 public interface IServizioHotelProvinciaTrento
 {
     [OperationContract]
-    public Hotel[] DaiElencoHotel();
+    public Task<Hotel[]> DaiElencoHotel(); // Modificato per async
 
     [OperationContract]
 
-    public Hotel[] RicercaHotelPerComune(string comune);
+    public Task<Hotel[]> RicercaHotelPerComune(string comune); // Modificato per async
 }
 
 public class ServizioHotelProvinciaTrento : IServizioHotelProvinciaTrento
 {
-    public Hotel[] DaiElencoHotel()
+    private readonly FunzioneInterrogazioneDati _funzioniDati;
+
+    // Costruttore per Dependency Injection
+    public ServizioHotelProvinciaTrento(FunzioneInterrogazioneDati funzioniDati)
     {
-        return FunzioniDatiHotell.FunzioneInterrogazioneDati.DaiElencoHotel().Result;
+        _funzioniDati = funzioniDati;
     }
 
-    public Hotel[] RicercaHotelPerComune(string comune)
+    public async Task<Hotel[]> DaiElencoHotel()
     {
-        return FunzioniDatiHotell.FunzioneInterrogazioneDati.RicercaHotelPerComune(comune).Result;
+        // Usa l'istanza iniettata e await
+        return await _funzioniDati.DaiElencoHotel();
+    }
+
+    public async Task<Hotel[]> RicercaHotelPerComune(string comune)
+    {
+        // Usa l'istanza iniettata e await
+        return await _funzioniDati.RicercaHotelPerComune(comune);
     }
 }

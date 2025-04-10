@@ -1,3 +1,7 @@
+/*
+ *   Copyright (c) 2025 
+ *   All rights reserved.
+ */
 using FunzioniDatiHotell;
 using ProvinciaTrentoHotel.WSSoap;
 using SoapCore;
@@ -18,22 +22,15 @@ namespace ProvinciaTrentoHotel
                 ServizioHotelProvinciaTrento
             >();
 
+            // Aggiungi il servizio di memorizzazione nella cache
+            builder.Services.AddMemoryCache();
             builder.Services.AddControllersWithViews();
+            // Registro FunzioneInterrogazioneDati per la DI
+            builder.Services.AddScoped<FunzioneInterrogazioneDati>();
 
             var app = builder.Build();
 
-            // Recupero la configurazione DatiOpen e imposto l'URL base
-            var hotelApiBaseUri = app.Configuration.GetValue<string>("DatiOpen:HotelApiBaseUri");
-            if (!string.IsNullOrEmpty(hotelApiBaseUri))
-            {
-                FunzioneInterrogazioneDati.SetBaseUrl(hotelApiBaseUri);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    "La configurazione DatiOpen:HotelApiBaseUri non è stata trovata in appsettings.json"
-                );
-            }
+            // Rimuovo l'impostazione statica di BaseUrl, ora gestita tramite DI in FunzioneInterrogazioneDati
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
