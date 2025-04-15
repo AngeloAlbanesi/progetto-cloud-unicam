@@ -38,6 +38,8 @@ bld/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 wwwroot/
 
+.idea/
+
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
@@ -383,3 +385,16 @@ Thumbs.db
 *.runtimeconfig.dev.json
 *.deps.json
 *.StaticWebAssets.xml
+.idea/encodings.xml
+.idea/indexLayout.xml
+.idea/material_theme_project_new.xml
+.idea/vcs.xml
+.idea/.idea.ProvinciaTrentoHotel/.idea/.name
+.idea/.idea.ProvinciaTrentoHotel/.idea/encodings.xml
+.idea/.idea.ProvinciaTrentoHotel/.idea/indexLayout.xml
+.idea/.idea.ProvinciaTrentoHotel/.idea/material_theme_project_new.xml
+.idea/.idea.ProvinciaTrentoHotel/.idea/vcs.xml
+.github/copilot-instructions.md
+FunzioniDatiHotell/FunzioniDatiHotell.csproj
+memlog/analisi_meccanismi_velocita_aggiornamento.md
+.github/copilot-instructions.md
