@@ -6,9 +6,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="../ProvinciaTrentoHotel.csproj" />
-    </ItemGroup>
+    <!-- Rimosso ItemGroup con ProjectReference a ProvinciaTrentoHotel.csproj -->
 
     <ItemGroup>
         <None Include="../appsettings.json">

@@ -1,62 +1,47 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Linq;
 using FunzioniDatiHotell.Modelli;
 
 namespace FunzioniDatiHotell
 {
     /// <summary>
-    /// Classe che gestisce l'interrogazione e il recupero dei dati relativi agli hotel della Provincia di Trento.
-    /// Fornisce funzionalità per ottenere l'elenco completo degli hotel, ricercare hotel per comune o partita IVA,
-    /// e ottenere l'elenco dei comuni disponibili.
+    /// Classe statica per interrogare il servizio OData della Provincia di Trento
+    /// e recuperare informazioni sugli hotel e i comuni disponibili.
     /// </summary>
     public class FunzioneInterrogazioneDati
     {
-        /// <summary>
-        /// URL base per le richieste API.
-        /// </summary>
         private static string BaseUrl;
-
-        /// <summary>
-        /// Array contenente tutti i comuni disponibili. Viene inizializzato alla prima richiesta.
-        /// </summary>
         private static string[] TuttiComuni;
+        private const int PAGE_SIZE = 520;
 
-        /// <summary>
-        /// Dimensione della pagina per le richieste paginate.
-        /// </summary>
-        private const int PAGE_SIZE = 50;
-
-        /// <summary>
-        /// Namespace XML utilizzati per il parsing delle risposte.
-        /// </summary>
         private static readonly XNamespace D =
             "http://schemas.microsoft.com/ado/2007/08/dataservices";
         private static readonly XNamespace M =
             "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
         private static readonly XNamespace ATOM = "http://www.w3.org/2005/Atom";
-
-        /// <summary>
-        /// Client HTTP utilizzato per effettuare le richieste.
-        /// </summary>
         private static readonly HttpClient _httpClient = new HttpClient();
 
         /// <summary>
-        /// Imposta l'URL base per le richieste API.
+        /// Imposta l'URL base per le richieste al servizio OData.
         /// </summary>
-        /// <param name="url">L'URL base da utilizzare per le richieste.</param>
+        /// <param name="url">L'URL base del servizio OData.</param>
         public static void SetBaseUrl(string url)
         {
             BaseUrl = url;
         }
 
         /// <summary>
-        /// Verifica che l'URL base sia stato impostato.
+        /// Verifica che la variabile BaseUrl sia stata impostata.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Lanciata quando l'URL base non è stato impostato.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// Lanciata se BaseUrl non è stato impostato.
+        /// </exception>
         private static void VerifyBaseUrlIsSet()
         {
             if (string.IsNullOrEmpty(BaseUrl))
@@ -68,9 +53,11 @@ namespace FunzioniDatiHotell
         }
 
         /// <summary>
-        /// Recupera l'elenco completo di tutti gli hotel.
+        /// Recupera l'elenco completo di tutti gli hotel disponibili.
         /// </summary>
-        /// <returns>Un array contenente tutti gli hotel disponibili.</returns>
+        /// <returns>
+        /// Un task che rappresenta l'operazione asincrona. Il risultato del task è un array di oggetti Hotel.
+        /// </returns>
         public static async Task<Hotel[]> DaiElencoHotel()
         {
             VerifyBaseUrlIsSet();
@@ -78,24 +65,27 @@ namespace FunzioniDatiHotell
         }
 
         /// <summary>
-        /// Ricerca gli hotel in un determinato comune.
+        /// Ricerca e recupera gli hotel situati nel comune specificato.
         /// </summary>
-        /// <param name="comune">Il nome del comune in cui cercare gli hotel.</param>
-        /// <returns>Un array contenente gli hotel trovati nel comune specificato.</returns>
+        /// <param name="comune">Il nome del comune per cui cercare gli hotel.</param>
+        /// <returns>
+        /// Un task che rappresenta l'operazione asincrona. Il risultato del task è un array di oggetti Hotel trovati nel comune.
+        /// </returns>
         public static async Task<Hotel[]> RicercaHotelPerComune(string comune)
         {
             VerifyBaseUrlIsSet();
-            // Gestione apostrofi per OData: raddoppia ogni apostrofo singolo
             string comuneODataSafe = comune.Replace("'", "''");
             string filter = $"Cccomune_608711150 eq '{comuneODataSafe}'";
             return await FetchHotels(filter);
         }
 
         /// <summary>
-        /// Ricerca un hotel specifico tramite la sua partita IVA.
+        /// Ricerca e recupera un hotel specifico tramite la sua Partita IVA.
         /// </summary>
-        /// <param name="pIva">La partita IVA dell'hotel da cercare.</param>
-        /// <returns>L'hotel corrispondente alla partita IVA specificata, o null se non trovato.</returns>
+        /// <param name="pIva">La Partita IVA dell'hotel da cercare.</param>
+        /// <returns>
+        /// Un task che rappresenta l'operazione asincrona. Il risultato del task è l'oggetto Hotel corrispondente o null se non trovato.
+        /// </returns>
         public static async Task<Hotel> RicercaHotelPerPIVA(string pIva)
         {
             VerifyBaseUrlIsSet();
@@ -105,9 +95,117 @@ namespace FunzioniDatiHotell
         }
 
         /// <summary>
-        /// Recupera l'elenco di tutti i comuni in cui sono presenti hotel.
+        /// Recupera gli hotel dal servizio OData, gestendo il paging in modo parallelo.
         /// </summary>
-        /// <returns>Un array contenente i nomi dei comuni disponibili.</returns>
+        /// <param name="filter">Filtro OData opzionale per la ricerca (es. per comune o partita IVA).</param>
+        /// <returns>
+        /// Un task che rappresenta l'operazione asincrona. Il risultato del task è un array di oggetti Hotel.
+        /// </returns>
+        /// <exception cref="Exception">Propaga eventuali errori di rete o parsing.</exception>
+        private static async Task<Hotel[]> FetchHotels(string filter = null)
+        {
+            VerifyBaseUrlIsSet();
+            // Cronometro per misurare il tempo di esecuzione delle richieste
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // Inizia recuperando la prima pagina per vedere se ci sono risultati
+                string firstPageUrl = BuildUrl(
+                    skip: 0,
+                    filter: filter,
+                    select: null,
+                    top: PAGE_SIZE,
+                    includeCount: false
+                );
+
+                Console.WriteLine($"[DEBUG] Richiesta prima pagina: {firstPageUrl}");
+
+                var response = await _httpClient.GetAsync(firstPageUrl);
+                Console.WriteLine($"[DEBUG] Status code risposta: {response.StatusCode}");
+
+                response.EnsureSuccessStatusCode();
+                string contents = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(
+                    $"[DEBUG] Lunghezza contenuto risposta: {contents.Length} caratteri"
+                );
+
+                XDocument xml = XDocument.Parse(contents);
+                var entries = xml.Descendants(ATOM + "entry").ToList();
+                Console.WriteLine(
+                    $"[DEBUG] Numero entry trovate nella prima pagina: {entries.Count}"
+                );
+
+                if (entries.Count == 0)
+                {
+                    stopwatch.Stop();
+                    Console.WriteLine(
+                        $"FetchHotelsParallel completato in {stopwatch.ElapsedMilliseconds}ms (0 risultati)."
+                    );
+                    return Array.Empty<Hotel>();
+                }
+
+                // Se abbiamo trovato risultati, recuperiamo tutte le pagine necessarie
+                var allHotels = new List<Hotel>();
+                int currentPage = 0;
+                bool hasMore = true;
+
+                while (hasMore)
+                {
+                    int skip = currentPage * PAGE_SIZE;
+                    string pageUrl = BuildUrl(
+                        skip: skip,
+                        filter: filter,
+                        select: null,
+                        top: PAGE_SIZE,
+                        includeCount: false
+                    );
+
+                    Console.WriteLine($"[DEBUG] Recupero pagina {currentPage + 1}, skip={skip}");
+
+                    if (currentPage > 0) // Se non è la prima pagina, recupera i dati
+                    {
+                        response = await _httpClient.GetAsync(pageUrl);
+                        response.EnsureSuccessStatusCode();
+                        contents = await response.Content.ReadAsStringAsync();
+                        xml = XDocument.Parse(contents);
+                        entries = xml.Descendants(ATOM + "entry").ToList();
+                    }
+
+                    var pageHotels = entries
+                        .Select(entry => ExtractHotelFromXmlEntry(entry))
+                        .Where(hotel => hotel != null)
+                        .ToList();
+
+                    allHotels.AddRange(pageHotels);
+                    Console.WriteLine(
+                        $"[DEBUG] Aggiunti {pageHotels.Count} hotel dalla pagina {currentPage + 1}"
+                    );
+
+                    // Se abbiamo ricevuto meno hotel di PAGE_SIZE, abbiamo raggiunto l'ultima pagina
+                    hasMore = entries.Count == PAGE_SIZE;
+                    currentPage++;
+                }
+
+                stopwatch.Stop();
+                Console.WriteLine(
+                    $"FetchHotelsParallel completato in {stopwatch.ElapsedMilliseconds}ms ({allHotels.Count} risultati)."
+                );
+                return allHotels.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Errore durante il recupero degli hotel: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Recupera l'elenco univoco e ordinato dei comuni in cui è presente almeno un hotel.
+        /// </summary>
+        /// <returns>
+        /// Un task che rappresenta l'operazione asincrona. Il risultato del task è un array di stringhe contenente i nomi dei comuni.
+        /// </returns>
         public static async Task<String[]> ComuniDisponibili()
         {
             if (TuttiComuni != null)
@@ -122,163 +220,204 @@ namespace FunzioniDatiHotell
 
             while (hasMore)
             {
-                string pagedUrl = BuildUrl(skip, null, "Cccomune_608711150");
-                var response = await _httpClient.GetAsync(pagedUrl);
-                string contents = await response.Content.ReadAsStringAsync();
-                XDocument xml = XDocument.Parse(contents);
-
-                var entries = xml.Descendants(ATOM + "entry").ToList();
-                hasMore = entries.Count == PAGE_SIZE;
-
-                foreach (var entry in entries)
+                string pagedUrl = BuildUrl(skip, null, "Cccomune_608711150", PAGE_SIZE);
+                try
                 {
-                    var contentElement = entry.Element(ATOM + "content");
-                    if (contentElement != null)
+                    var response = await _httpClient.GetAsync(pagedUrl);
+                    response.EnsureSuccessStatusCode();
+                    string contents = await response.Content.ReadAsStringAsync();
+                    XDocument xml = XDocument.Parse(contents);
+
+                    var entries = xml.Descendants(ATOM + "entry").ToList();
+                    var nextLink = xml.Descendants(ATOM + "link")
+                        .FirstOrDefault(link => link.Attribute("rel")?.Value == "next");
+                    hasMore = nextLink != null || entries.Count == PAGE_SIZE;
+
+                    foreach (var entry in entries)
                     {
-                        var properties = contentElement.Element(M + "properties");
-                        if (properties != null)
+                        var contentElement = entry.Element(ATOM + "content");
+                        if (contentElement != null)
                         {
-                            var comune = properties.Element(D + "Cccomune_608711150")?.Value;
-                            if (!string.IsNullOrWhiteSpace(comune))
+                            var properties = contentElement.Element(M + "properties");
+                            if (properties != null)
                             {
-                                comuni.Add(comune.Trim());
+                                var comuneValue = properties
+                                    .Element(D + "Cccomune_608711150")
+                                    ?.Value;
+                                if (!string.IsNullOrWhiteSpace(comuneValue))
+                                {
+                                    comuni.Add(comuneValue.Trim());
+                                }
                             }
                         }
                     }
+                    if (hasMore)
+                    {
+                        skip += PAGE_SIZE;
+                    }
                 }
-
-                skip += PAGE_SIZE;
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Errore durante il recupero dei comuni: {ex.Message}");
+                    throw;
+                }
             }
 
-            TuttiComuni = comuni.ToArray();
+            TuttiComuni = comuni.OrderBy(c => c).ToArray();
             return TuttiComuni;
         }
 
         /// <summary>
-        /// Recupera gli hotel dal servizio, con possibilità di applicare un filtro.
+        /// Recupera e analizza una singola pagina di hotel dal servizio OData.
         /// </summary>
-        /// <param name="filter">Il filtro da applicare alla ricerca (opzionale).</param>
-        /// <returns>Un array contenente gli hotel che corrispondono ai criteri di ricerca.</returns>
-        private static async Task<Hotel[]> FetchHotels(string filter = null)
+        /// <param name="skip">Numero di record da saltare (per il paging).</param>
+        /// <param name="filter">Filtro OData opzionale per la ricerca.</param>
+        /// <returns>
+        /// Un task che rappresenta l'operazione asincrona. Il risultato è una collezione di oggetti Hotel.
+        /// </returns>
+        private static async Task<IEnumerable<Hotel>> FetchAndParsePageAsync(
+            int skip,
+            string filter = null
+        )
         {
-            List<Hotel> hotels = new List<Hotel>();
-            int skip = 0;
-            bool hasMore = true;
-
-            while (hasMore)
+            string pagedUrl = BuildUrl(
+                skip,
+                filter,
+                select: null,
+                top: PAGE_SIZE,
+                includeCount: false
+            );
+            try
             {
-                string pagedUrl = BuildUrl(skip, filter);
                 var response = await _httpClient.GetAsync(pagedUrl);
+                response.EnsureSuccessStatusCode();
                 string contents = await response.Content.ReadAsStringAsync();
-
                 XDocument xml = XDocument.Parse(contents);
-                var entries = xml.Descendants(ATOM + "entry").ToList();
-                hasMore = entries.Count == PAGE_SIZE;
 
-                foreach (var entry in entries)
-                {
-                    var hotel = ExtractHotelFromXmlEntry(entry);
-                    if (hotel != null)
-                    {
-                        hotels.Add(hotel);
-                    }
-                }
-
-                skip += PAGE_SIZE;
+                var entries = xml.Descendants(ATOM + "entry");
+                return entries
+                    .Select(entry => ExtractHotelFromXmlEntry(entry))
+                    .Where(hotel => hotel != null)
+                    .ToList();
             }
-
-            return hotels.ToArray();
+            catch (HttpRequestException httpEx)
+            {
+                Console.WriteLine(
+                    $"Errore HTTP durante il recupero della pagina (skip={skip}, url={pagedUrl}): {httpEx.StatusCode} - {httpEx.Message}"
+                );
+                return Enumerable.Empty<Hotel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"Errore generico durante il recupero/parsing della pagina (skip={skip}, url={pagedUrl}): {ex.Message}"
+                );
+                return Enumerable.Empty<Hotel>();
+            }
         }
 
         /// <summary>
-        /// Costruisce l'URL per la richiesta API, includendo i parametri di paginazione e filtro.
+        /// Costruisce l'URL per la richiesta OData, includendo parametri di paging, filtro, selezione e conteggio.
         /// </summary>
-        /// <param name="skip">Il numero di risultati da saltare (per la paginazione).</param>
-        /// <param name="filter">Il filtro da applicare alla ricerca (opzionale).</param>
-        /// <param name="select">I campi da selezionare nella risposta (opzionale).</param>
-        /// <returns>L'URL completo per la richiesta API.</returns>
-        private static string BuildUrl(int skip, string filter = null, string select = null)
+        /// <param name="skip">Numero di record da saltare (per il paging).</param>
+        /// <param name="filter">Filtro OData opzionale.</param>
+        /// <param name="select">Campi da selezionare (opzionale).</param>
+        /// <param name="top">Numero massimo di record da recuperare (opzionale).</param>
+        /// <param name="includeCount">Se true, include il conteggio totale dei record.</param>
+        /// <returns>L'URL completo per la richiesta OData.</returns>
+        private static string BuildUrl(
+            int skip,
+            string filter = null,
+            string select = null,
+            int? top = null,
+            bool includeCount = false
+        )
         {
-            string url = BaseUrl;
-            bool hasQueryParams = url.Contains("?");
+            var uriBuilder = new UriBuilder(BaseUrl);
+            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
 
-            // Handle $skip parameter
-            if (url.Contains("$skip="))
+            query["$skip"] = skip.ToString();
+
+            int? effectiveTop = top;
+            bool setPageSize = false;
+            if (!effectiveTop.HasValue && !includeCount)
             {
-                url = System.Text.RegularExpressions.Regex.Replace(
-                    url,
-                    @"\$skip=\d+",
-                    $"$skip={skip}"
-                );
+                setPageSize = true;
             }
-            else
+            if (setPageSize)
             {
-                url += hasQueryParams ? $"&$skip={skip}" : $"?$skip={skip}";
-                hasQueryParams = true;
+                effectiveTop = PAGE_SIZE;
             }
 
-            // Add filter if specified
+            if (effectiveTop.HasValue)
+            {
+                query["$top"] = effectiveTop.Value.ToString();
+            }
+
             if (!string.IsNullOrEmpty(filter))
             {
-                // Codifica URL del filtro per evitare errori con caratteri speciali
-                string encodedFilter = Uri.EscapeDataString(filter);
-                url += hasQueryParams ? $"&$filter={encodedFilter}" : $"?$filter={encodedFilter}";
-                hasQueryParams = true;
+                query["$filter"] = filter;
             }
 
-            // Add select if specified
-            if (!string.IsNullOrEmpty(select) && !url.Contains("$select="))
+            if (!string.IsNullOrEmpty(select))
             {
-                url += hasQueryParams ? $"&$select={select}" : $"?$select={select}";
+                query["$select"] = select;
             }
 
-            return url;
+            if (includeCount)
+            {
+                query["$count"] = "true";
+            }
+
+            uriBuilder.Query = query.ToString();
+            return uriBuilder.ToString();
         }
 
         /// <summary>
-        /// Estrae le informazioni dell'hotel da un elemento XML.
+        /// Estrae un oggetto Hotel da una entry XML OData.
         /// </summary>
-        /// <param name="entry">L'elemento XML contenente i dati dell'hotel.</param>
-        /// <returns>Un oggetto Hotel popolato con i dati estratti, o null se i dati non sono validi.</returns>
+        /// <param name="entry">L'elemento XML che rappresenta una entry di hotel.</param>
+        /// <returns>L'oggetto Hotel estratto, oppure null se il parsing fallisce.</returns>
         private static Hotel ExtractHotelFromXmlEntry(XElement entry)
         {
-            var contentElement = entry.Element(ATOM + "content");
+            var contentElement = entry?.Element(ATOM + "content");
             if (contentElement == null)
-            {
                 return null;
-            }
 
             var properties = contentElement.Element(M + "properties");
             if (properties == null)
+                return null;
+
+            string GetValueOrDefault(XName elementName, string defaultValue = "Sconosciuto") =>
+                properties.Element(elementName)?.Value ?? defaultValue;
+
+            try
             {
+                return new Hotel
+                {
+                    PartitaIva = GetValueOrDefault(D + "Ccpartita_iva_1140518421"),
+                    Comune = GetValueOrDefault(D + "Cccomune_608711150"),
+                    DenominazioneStruttura = GetValueOrDefault(D + "Ccdenominazione1291548260"),
+                    Tipologia = GetValueOrDefault(D + "Cctipologia_alb1238256790"),
+                    Categoria = GetValueOrDefault(D + "Cccategoria_709124048"),
+                    Indirizzo = GetValueOrDefault(D + "Ccindirizzo_1322096747"),
+                    Frazione = GetValueOrDefault(D + "Ccfrazione_182197691"),
+                    CAP = GetValueOrDefault(D + "Cccap_3047567"),
+                    Telefono = GetValueOrDefault(D + "Cctelefono_90134615"),
+                    FAX = GetValueOrDefault(D + "Ccfax_3050458"),
+                    IndirizzoPostaElettronica = GetValueOrDefault(D + "Ccindirizzo_pos1351423458"),
+                    TipologiaServizio = GetValueOrDefault(D + "Cctipologia_serv481601159"),
+                    Altitudine = GetValueOrDefault(D + "Ccaltitudine_1110206336"),
+                    NumeroPostiletto = GetValueOrDefault(D + "Ccnumero_posti_1304069088"),
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"Errore durante il parsing dell'entry XML per un hotel: {ex.Message}"
+                );
                 return null;
             }
-
-            return new Hotel
-            {
-                PartitaIva =
-                    properties.Element(D + "Ccpartita_iva_1140518421")?.Value ?? "Sconosciuto",
-                Comune = properties.Element(D + "Cccomune_608711150")?.Value ?? "Sconosciuto",
-                DenominazioneStruttura =
-                    properties.Element(D + "Ccdenominazione1291548260")?.Value ?? "Sconosciuto",
-                Tipologia =
-                    properties.Element(D + "Cctipologia_alb1238256790")?.Value ?? "Sconosciuto",
-                Categoria = properties.Element(D + "Cccategoria_709124048")?.Value ?? "Sconosciuto",
-                Indirizzo =
-                    properties.Element(D + "Ccindirizzo_1322096747")?.Value ?? "Sconosciuto",
-                Frazione = properties.Element(D + "Ccfrazione_182197691")?.Value ?? "Sconosciuto",
-                CAP = properties.Element(D + "Cccap_3047567")?.Value ?? "Sconosciuto",
-                Telefono = properties.Element(D + "Cctelefono_90134615")?.Value ?? "Sconosciuto",
-                FAX = properties.Element(D + "Ccfax_3050458")?.Value ?? "Sconosciuto",
-                IndirizzoPostaElettronica =
-                    properties.Element(D + "Ccindirizzo_pos1351423458")?.Value ?? "Sconosciuto",
-                TipologiaServizio =
-                    properties.Element(D + "Cctipologia_serv481601159")?.Value ?? "Sconosciuto",
-                Altitudine =
-                    properties.Element(D + "Ccaltitudine_1110206336")?.Value ?? "Sconosciuto",
-                NumeroPostiletto =
-                    properties.Element(D + "Ccnumero_posti_1304069088")?.Value ?? "Sconosciuto",
-            };
         }
     }
 }
