@@ -1,10 +1,6 @@
-using System; // Aggiunto per TimeSpan
-using System.Diagnostics;
-using System.Threading.Tasks; // Aggiunto per Task e await
 using FunzioniDatiHotell;
 using FunzioniDatiHotell.Modelli;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory; // Aggiunto per IMemoryCache
 using ProvinciaTrentoHotel.ViewModels;
 
 namespace ProvinciaTrentoHotel.Controllers

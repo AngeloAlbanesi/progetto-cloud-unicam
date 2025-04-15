@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 using FunzioniDatiHotell.Modelli;
@@ -265,55 +260,6 @@ namespace FunzioniDatiHotell
 
             TuttiComuni = comuni.OrderBy(c => c).ToArray();
             return TuttiComuni;
-        }
-
-        /// <summary>
-        /// Recupera e analizza una singola pagina di hotel dal servizio OData.
-        /// </summary>
-        /// <param name="skip">Numero di record da saltare (per il paging).</param>
-        /// <param name="filter">Filtro OData opzionale per la ricerca.</param>
-        /// <returns>
-        /// Un task che rappresenta l'operazione asincrona. Il risultato è una collezione di oggetti Hotel.
-        /// </returns>
-        private static async Task<IEnumerable<Hotel>> FetchAndParsePageAsync(
-            int skip,
-            string filter = null
-        )
-        {
-            string pagedUrl = BuildUrl(
-                skip,
-                filter,
-                select: null,
-                top: PAGE_SIZE,
-                includeCount: false
-            );
-            try
-            {
-                var response = await _httpClient.GetAsync(pagedUrl);
-                response.EnsureSuccessStatusCode();
-                string contents = await response.Content.ReadAsStringAsync();
-                XDocument xml = XDocument.Parse(contents);
-
-                var entries = xml.Descendants(ATOM + "entry");
-                return entries
-                    .Select(entry => ExtractHotelFromXmlEntry(entry))
-                    .Where(hotel => hotel != null)
-                    .ToList();
-            }
-            catch (HttpRequestException httpEx)
-            {
-                Console.WriteLine(
-                    $"Errore HTTP durante il recupero della pagina (skip={skip}, url={pagedUrl}): {httpEx.StatusCode} - {httpEx.Message}"
-                );
-                return Enumerable.Empty<Hotel>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(
-                    $"Errore generico durante il recupero/parsing della pagina (skip={skip}, url={pagedUrl}): {ex.Message}"
-                );
-                return Enumerable.Empty<Hotel>();
-            }
         }
 
         /// <summary>
