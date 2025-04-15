@@ -55,6 +55,8 @@ namespace ProvinciaTrentoHotel
                 pattern: "{controller=Home}/{action=Index}/{id?}"
             );
 
+
+            //configurazione endpoint per servizio SOAP
             app.UseEndpoints(endpoints =>
             {
                 endpoints.UseSoapEndpoint<IServizioHotelProvinciaTrento>(

@@ -19,10 +19,9 @@ namespace ProvinciaTrentoHotel.Controllers
             return View();
         }
 
-        // Modificato per caching e async
+       
         /// <summary>
         /// Mostra la vista con l'elenco completo degli hotel.
-        /// Utilizza una cache in memoria (IMemoryCache) per ottimizzare i caricamenti successivi.
         /// </summary>
         /// <returns>
         /// Un Task&lt;IActionResult&gt; che rappresenta l'operazione asincrona.
@@ -30,7 +29,7 @@ namespace ProvinciaTrentoHotel.Controllers
         /// </returns>
         public async Task<IActionResult> ElencoHotel()
         {
-            Hotel[] elencoHotel = await FunzioneInterrogazioneDati.DaiElencoHotel(); // Usa await
+            Hotel[] elencoHotel = await FunzioneInterrogazioneDati.DaiElencoHotel(); 
 
             HomeElencoHotelViewModel vm = new HomeElencoHotelViewModel
             {
@@ -40,11 +39,10 @@ namespace ProvinciaTrentoHotel.Controllers
         }
 
         [HttpPost]
-        // Modificato per async
         /// <summary>
         /// Gestisce la richiesta POST per la ricerca di hotel in un comune specifico.
         /// </summary>
-        /// <param name="InputComune">Il nome del comune inserito dall'utente nel form di ricerca.</param>
+        /// <param name="InputComune">Il nome del comune selezionato dall'utente tra quelli disponibili.</param>
         /// <returns>
         /// Un Task&lt;IActionResult&gt; che rappresenta l'operazione asincrona.
         /// Il risultato è un ActionResult che renderizza la vista RicercaHotelComune con il modello HomeRicercaHotelComuneViewModel popolato con i risultati della ricerca e l'elenco dei comuni disponibili.
@@ -53,11 +51,11 @@ namespace ProvinciaTrentoHotel.Controllers
         {
             HomeRicercaHotelComuneViewModel vmRicercaComune = new HomeRicercaHotelComuneViewModel();
 
-            // Esegui le chiamate 
+            
             Hotel[] ricercaHotel = await FunzioneInterrogazioneDati.RicercaHotelPerComune(
                 InputComune
-            ); // Usa await
-            string[] comuniDisponibili = await FunzioneInterrogazioneDati.ComuniDisponibili(); // Usa await
+            );
+            string[] comuniDisponibili = await FunzioneInterrogazioneDati.ComuniDisponibili();
 
             vmRicercaComune.RicercaHotel = ricercaHotel;
             vmRicercaComune.ComuniDisponibili = comuniDisponibili;
@@ -65,9 +63,9 @@ namespace ProvinciaTrentoHotel.Controllers
             return View(vmRicercaComune);
         }
 
-        // Modificato per async
+        
         /// <summary>
-        /// Mostra la vista per la ricerca di hotel per comune, popolando l'elenco a discesa dei comuni disponibili.
+        /// Mostra la vista per la ricerca di hotel per comune, popolando l'elenco a tendina dei comuni disponibili.
         /// </summary>
         /// <returns>
         /// Un Task&lt;IActionResult&gt; che rappresenta l'operazione asincrona.
@@ -77,11 +75,11 @@ namespace ProvinciaTrentoHotel.Controllers
         {
             HomeRicercaHotelComuneViewModel vmRicercaComune = new HomeRicercaHotelComuneViewModel();
             vmRicercaComune.ComuniDisponibili =
-                await FunzioneInterrogazioneDati.ComuniDisponibili(); // Usa await
+                await FunzioneInterrogazioneDati.ComuniDisponibili(); 
             return View(vmRicercaComune);
         }
 
-        // Modificato per async
+        
         /// <summary>
         /// Mostra la vista con i dettagli di un hotel specifico, identificato dalla sua Partita IVA.
         /// </summary>
@@ -93,7 +91,7 @@ namespace ProvinciaTrentoHotel.Controllers
         public async Task<IActionResult> DettagliHotel(string pIva)
         {
             HomeDettagliHotelViewModel vmDettagliHotel = new HomeDettagliHotelViewModel();
-            Hotel hotelDettagliato = await FunzioneInterrogazioneDati.RicercaHotelPerPIVA(pIva); // Usa await
+            Hotel hotelDettagliato = await FunzioneInterrogazioneDati.RicercaHotelPerPIVA(pIva);
             vmDettagliHotel.hotelDettagliato = hotelDettagliato;
             return View(vmDettagliHotel);
         }

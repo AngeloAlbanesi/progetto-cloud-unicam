@@ -37,7 +37,7 @@ namespace FunzioniDatiHotell
         /// <exception cref="InvalidOperationException">
         /// Lanciata se BaseUrl non è stato impostato.
         /// </exception>
-        private static void VerifyBaseUrlIsSet()
+        private static void VerificaSetBaseUrl()
         {
             if (string.IsNullOrEmpty(BaseUrl))
             {
@@ -55,7 +55,7 @@ namespace FunzioniDatiHotell
         /// </returns>
         public static async Task<Hotel[]> DaiElencoHotel()
         {
-            VerifyBaseUrlIsSet();
+            VerificaSetBaseUrl();
             return await FetchHotels();
         }
 
@@ -68,8 +68,8 @@ namespace FunzioniDatiHotell
         /// </returns>
         public static async Task<Hotel[]> RicercaHotelPerComune(string comune)
         {
-            VerifyBaseUrlIsSet();
-            string comuneODataSafe = comune.Replace("'", "''");
+            VerificaSetBaseUrl();
+            string comuneODataSafe = comune.Replace("'", "''"); // aggiunto perchè alcuni comuni contengono apostrofi
             string filter = $"Cccomune_608711150 eq '{comuneODataSafe}'";
             return await FetchHotels(filter);
         }
@@ -83,7 +83,7 @@ namespace FunzioniDatiHotell
         /// </returns>
         public static async Task<Hotel> RicercaHotelPerPIVA(string pIva)
         {
-            VerifyBaseUrlIsSet();
+            VerificaSetBaseUrl();
             string filter = $"Ccpartita_iva_1140518421 eq '{pIva}'";
             Hotel[] hotels = await FetchHotels(filter);
             return hotels.FirstOrDefault();
@@ -96,11 +96,11 @@ namespace FunzioniDatiHotell
         /// <returns>
         /// Un task che rappresenta l'operazione asincrona. Il risultato del task è un array di oggetti Hotel.
         /// </returns>
-        /// <exception cref="Exception">Propaga eventuali errori di rete o parsing.</exception>
+        /// <exception cref="Exception">Segnala eventuali errori.</exception>
         private static async Task<Hotel[]> FetchHotels(string filter = null)
         {
-            VerifyBaseUrlIsSet();
-            // Cronometro per misurare il tempo di esecuzione delle richieste
+            VerificaSetBaseUrl();
+            // Cronometro per misurare il tempo di esecuzione delle richieste, UTILIZZATO per il debug
             var stopwatch = Stopwatch.StartNew();
 
             try
@@ -114,28 +114,26 @@ namespace FunzioniDatiHotell
                     includeCount: false
                 );
 
-                Console.WriteLine($"[DEBUG] Richiesta prima pagina: {firstPageUrl}");
+                Console.WriteLine($"[DEBUG] Richiesta prima pagina: {firstPageUrl}"); //UTILIZZATO PER IL DEBUG, url della prima pagina
 
                 var response = await _httpClient.GetAsync(firstPageUrl);
                 Console.WriteLine($"[DEBUG] Status code risposta: {response.StatusCode}");
 
                 response.EnsureSuccessStatusCode();
                 string contents = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(
-                    $"[DEBUG] Lunghezza contenuto risposta: {contents.Length} caratteri"
-                );
+               
 
                 XDocument xml = XDocument.Parse(contents);
                 var entries = xml.Descendants(ATOM + "entry").ToList();
                 Console.WriteLine(
-                    $"[DEBUG] Numero entry trovate nella prima pagina: {entries.Count}"
+                    $"[DEBUG] Numero entry trovate nella prima pagina: {entries.Count}"  //UTILIZZATO PER IL DEBUG, restituzione del numero di entry della pagina
                 );
 
                 if (entries.Count == 0)
                 {
                     stopwatch.Stop();
                     Console.WriteLine(
-                        $"FetchHotelsParallel completato in {stopwatch.ElapsedMilliseconds}ms (0 risultati)."
+                        $"FetchHotelsParallel completato in {stopwatch.ElapsedMilliseconds}ms (0 risultati)." //UTILIZZATO PER IL DEBUG, calcolo del tempo di risposta
                     );
                     return Array.Empty<Hotel>();
                 }
@@ -156,7 +154,7 @@ namespace FunzioniDatiHotell
                         includeCount: false
                     );
 
-                    Console.WriteLine($"[DEBUG] Recupero pagina {currentPage + 1}, skip={skip}");
+                    Console.WriteLine($"[DEBUG] Recupero pagina {currentPage + 1}, skip={skip}");   //UTILIZZATO PER IL DEBUG, restituisce url pagine successive
 
                     if (currentPage > 0) // Se non è la prima pagina, recupera i dati
                     {
@@ -168,13 +166,13 @@ namespace FunzioniDatiHotell
                     }
 
                     var pageHotels = entries
-                        .Select(entry => ExtractHotelFromXmlEntry(entry))
+                        .Select(entry => ParseHotelDaXmlEntry(entry))
                         .Where(hotel => hotel != null)
                         .ToList();
 
                     allHotels.AddRange(pageHotels);
                     Console.WriteLine(
-                        $"[DEBUG] Aggiunti {pageHotels.Count} hotel dalla pagina {currentPage + 1}"
+                        $"[DEBUG] Aggiunti {pageHotels.Count} hotel dalla pagina {currentPage + 1}" //UTILIZZATO PER IL DEBUG, restituisce il numero di hotel aggiunti
                     );
 
                     // Se abbiamo ricevuto meno hotel di PAGE_SIZE, abbiamo raggiunto l'ultima pagina
@@ -184,13 +182,13 @@ namespace FunzioniDatiHotell
 
                 stopwatch.Stop();
                 Console.WriteLine(
-                    $"FetchHotelsParallel completato in {stopwatch.ElapsedMilliseconds}ms ({allHotels.Count} risultati)."
+                    $"FetchHotelsParallel completato in {stopwatch.ElapsedMilliseconds}ms ({allHotels.Count} risultati)." //UTILIZZATO PER IL DEBUG, calcolo del tempo di risposta
                 );
                 return allHotels.ToArray();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Errore durante il recupero degli hotel: {ex.Message}");
+                Console.WriteLine($"[ERROR] Errore durante il recupero degli hotel: {ex.Message}"); //UTILIZZATO PER IL DEBUG, restituisce l'errore
                 throw;
             }
         }
@@ -203,12 +201,15 @@ namespace FunzioniDatiHotell
         /// </returns>
         public static async Task<String[]> ComuniDisponibili()
         {
+
+            //se l'array TuttiComuni è già stato popolato, restituiscilo
             if (TuttiComuni != null)
             {
                 return TuttiComuni;
             }
 
-            VerifyBaseUrlIsSet();
+            VerificaSetBaseUrl();
+            //Utilizziamo HashSet per evitare duplicati
             HashSet<string> comuni = new HashSet<string>();
             int skip = 0;
             bool hasMore = true;
@@ -324,7 +325,7 @@ namespace FunzioniDatiHotell
         /// </summary>
         /// <param name="entry">L'elemento XML che rappresenta una entry di hotel.</param>
         /// <returns>L'oggetto Hotel estratto, oppure null se il parsing fallisce.</returns>
-        private static Hotel ExtractHotelFromXmlEntry(XElement entry)
+        private static Hotel ParseHotelDaXmlEntry(XElement entry)
         {
             var contentElement = entry?.Element(ATOM + "content");
             if (contentElement == null)
